@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-innovation-monitoring"
+version = "0.1.0"
+description = "24/7 AI innovation monitoring and market execution pipeline."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "selenium>=4.41.0",
+]
+
+[project.scripts]
+ai-monitor = "ai_innovation_monitoring.cli:main"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

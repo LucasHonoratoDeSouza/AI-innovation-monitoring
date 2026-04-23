@@ -1,0 +1,66 @@
+{
+  "issuer_aliases": {
+    "Anthropic": ["anthropic", "claude"],
+    "OpenAI": ["openai", "gpt"],
+    "Google": ["google", "gemini", "deepmind"],
+    "Adobe": ["adobe", "firefly"],
+    "Microsoft": ["microsoft", "copilot", "github"],
+    "Meta": ["meta", "llama"],
+    "NVIDIA": ["nvidia", "nemotron", "dgx"]
+  },
+  "official_domains": {
+    "Anthropic": ["anthropic.com"],
+    "OpenAI": ["openai.com"],
+    "Google": ["blog.google", "deepmind.google"],
+    "Adobe": ["blog.adobe.com", "adobe.com"],
+    "Microsoft": ["blogs.microsoft.com", "microsoft.com"],
+    "Meta": ["ai.meta.com", "about.fb.com"],
+    "NVIDIA": ["blogs.nvidia.com", "nvidia.com"]
+  },
+  "theme_rules": [
+    {
+      "name": "ai_design",
+      "keywords": ["design", "prototype", "mockup", "creative", "video", "image editing", "ui"],
+      "actions": [
+        {"ticker": "ADBE", "side": "sell", "weight": 1.0}
+      ],
+      "weight": 0.9
+    },
+    {
+      "name": "ai_infrastructure",
+      "keywords": ["gpu", "training", "inference", "datacenter", "model hosting"],
+      "actions": [
+        {"ticker": "NVDA", "side": "buy", "weight": 0.7}
+      ],
+      "weight": 0.8
+    },
+    {
+      "name": "ai_coding",
+      "keywords": ["coding", "developer", "code", "repository", "agentic engineering"],
+      "actions": [
+        {"ticker": "MSFT", "side": "buy", "weight": 0.5}
+      ],
+      "weight": 0.7
+    }
+  ],
+  "company_rules": [
+    {
+      "trigger_company": "Anthropic",
+      "categories": ["product_launch", "model_release"],
+      "required_themes": ["ai_design"],
+      "min_market_impact": 0.65,
+      "actions": [
+        {"ticker": "ADBE", "side": "sell", "weight": 1.0}
+      ]
+    },
+    {
+      "trigger_company": "Google",
+      "categories": ["model_release", "product_launch"],
+      "required_themes": ["ai_infrastructure"],
+      "min_market_impact": 0.6,
+      "actions": [
+        {"ticker": "NVDA", "side": "buy", "weight": 0.5}
+      ]
+    }
+  ]
+}

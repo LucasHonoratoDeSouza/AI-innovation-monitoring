@@ -1,0 +1,58 @@
+{
+  "rules": [
+    {
+      "source_company": "Anthropic",
+      "target_symbol": "ADBE",
+      "target_asset_type": "equity",
+      "relation": "competitor",
+      "direction": "negative",
+      "base_weight": 0.92,
+      "themes": ["ai_design"],
+      "categories": ["product_launch", "model_release"],
+      "metadata": {
+        "horizon": "near_term",
+        "thesis": "Generative design tooling pressures design software incumbents."
+      }
+    },
+    {
+      "source_company": "OpenAI",
+      "target_symbol": "MSFT",
+      "target_asset_type": "equity",
+      "relation": "strategic_partner",
+      "direction": "positive",
+      "base_weight": 0.72,
+      "themes": ["ai_coding"],
+      "categories": ["product_launch", "model_release"],
+      "metadata": {
+        "horizon": "medium_term"
+      }
+    },
+    {
+      "source_company": "Google",
+      "target_symbol": "NVDA",
+      "target_asset_type": "equity",
+      "relation": "supplier",
+      "direction": "positive",
+      "base_weight": 0.64,
+      "themes": ["ai_infrastructure"],
+      "categories": ["model_release", "product_launch"],
+      "metadata": {
+        "horizon": "medium_term"
+      }
+    },
+    {
+      "source_company": "*",
+      "target_symbol": "RNDR",
+      "target_asset_type": "crypto",
+      "relation": "sector_proxy",
+      "direction": "positive",
+      "base_weight": 0.25,
+      "themes": ["ai_infrastructure"],
+      "categories": ["model_release"],
+      "metadata": {
+        "horizon": "speculative",
+        "rare": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "runner": {
+    "poll_interval_seconds": 120,
+    "host_min_interval_seconds": 1.5,
+    "http_timeout_seconds": 15,
+    "dry_run": true,
+    "ingest_token": "change-me",
+    "queue_drain_batch_size": 500
+  },
+  "storage": {
+    "kind": "sqlite",
+    "sqlite_path": "data/ai_monitor.db",
+    "postgres_dsn_env_var": "POSTGRES_DSN"
+  },
+  "queue": {
+    "kind": "sqlite",
+    "sqlite_path": "data/ai_monitor.queue.db",
+    "redis_url_env_var": "REDIS_URL",
+    "reclaim_timeout_seconds": 300,
+    "block_timeout_seconds": 1
+  },
+  "llm": {
+    "enabled": false,
+    "endpoint_url": "https://api.openai.com/v1/chat/completions",
+    "api_key_env_var": "OPENAI_API_KEY",
+    "model": "gpt-5.4-mini",
+    "temperature": 0.0,
+    "max_tokens": 700,
+    "daily_budget_usd": 8.0,
+    "escalate_uncertainty_threshold": 0.42,
+    "escalate_market_impact_threshold": 0.65,
+    "escalate_novelty_threshold": 0.7
+  },
+  "delivery": {
+    "kind": "outbox",
+    "outbox_path": "data/orders_outbox.jsonl"
+  },
+  "risk": {
+    "max_order_notional_usd": 1500.0,
+    "min_order_notional_usd": 200.0,
+    "max_position_per_ticker_usd": 10000.0,
+    "max_total_exposure_usd": 25000.0,
+    "max_orders_per_day": 12,
+    "cooldown_minutes_per_ticker": 360,
+    "min_confidence_to_trade": 0.63,
+    "min_market_impact_to_trade": 0.55,
+    "min_crypto_impact_to_trade": 0.8,
+    "allow_short": true
+  },
+  "sources_file": "config/sources.json",
+  "market_profile_file": "config/market_profile.json",
+  "company_registry_file": "config/company_registry.json",
+  "impact_graph_file": "config/impact_graph.json"
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=AI Innovation Monitoring
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ai-innovation-monitoring
+EnvironmentFile=/opt/ai-innovation-monitoring/.env
+ExecStart=/usr/bin/env bash -lc 'PYTHONPATH=src python3 -m ai_innovation_monitoring serve --host 0.0.0.0 --port 8080'
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

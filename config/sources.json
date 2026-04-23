@@ -1,0 +1,119 @@
+{
+  "sources": [
+    {
+      "name": "anthropic-newsroom",
+      "kind": "sitemap",
+      "url": "https://www.anthropic.com/sitemap.xml",
+      "tags": ["official", "anthropic", "news"],
+      "poll_interval_seconds": 300,
+      "include_url_patterns": ["https://www\\.anthropic\\.com/news/"],
+      "exclude_url_patterns": ["https://www\\.anthropic\\.com/news/?$"],
+      "bootstrap_lookback_days": 21,
+      "max_documents_per_poll": 25,
+      "article_fetch": "http"
+    },
+    {
+      "name": "anthropic-engineering",
+      "kind": "sitemap",
+      "url": "https://www.anthropic.com/sitemap.xml",
+      "tags": ["official", "anthropic", "engineering"],
+      "poll_interval_seconds": 600,
+      "include_url_patterns": ["https://www\\.anthropic\\.com/engineering/"],
+      "exclude_url_patterns": ["https://www\\.anthropic\\.com/engineering/?$"],
+      "bootstrap_lookback_days": 21,
+      "max_documents_per_poll": 20,
+      "article_fetch": "http"
+    },
+    {
+      "name": "openai-product",
+      "kind": "sitemap",
+      "url": "https://openai.com/sitemap.xml/product/",
+      "tags": ["official", "openai", "product"],
+      "poll_interval_seconds": 300,
+      "include_url_patterns": ["https://openai\\.com/index/"],
+      "bootstrap_lookback_days": 21,
+      "max_documents_per_poll": 20,
+      "article_fetch": "browser",
+      "browser_name": "firefox"
+    },
+    {
+      "name": "openai-release",
+      "kind": "sitemap",
+      "url": "https://openai.com/sitemap.xml/release/",
+      "tags": ["official", "openai", "release"],
+      "poll_interval_seconds": 300,
+      "include_url_patterns": ["https://openai\\.com/index/"],
+      "bootstrap_lookback_days": 21,
+      "max_documents_per_poll": 20,
+      "article_fetch": "browser",
+      "browser_name": "firefox"
+    },
+    {
+      "name": "openai-research",
+      "kind": "sitemap",
+      "url": "https://openai.com/sitemap.xml/research/",
+      "tags": ["official", "openai", "research"],
+      "poll_interval_seconds": 600,
+      "include_url_patterns": ["https://openai\\.com/index/"],
+      "bootstrap_lookback_days": 21,
+      "max_documents_per_poll": 15,
+      "article_fetch": "browser",
+      "browser_name": "firefox"
+    },
+    {
+      "name": "openai-engineering",
+      "kind": "sitemap",
+      "url": "https://openai.com/sitemap.xml/engineering/",
+      "tags": ["official", "openai", "engineering"],
+      "poll_interval_seconds": 600,
+      "include_url_patterns": ["https://openai\\.com/index/"],
+      "bootstrap_lookback_days": 21,
+      "max_documents_per_poll": 15,
+      "article_fetch": "browser",
+      "browser_name": "firefox"
+    },
+    {
+      "name": "google-deepmind-blog",
+      "kind": "rss",
+      "url": "https://blog.google/technology/ai/rss/",
+      "tags": ["official", "google"],
+      "poll_interval_seconds": 300
+    },
+    {
+      "name": "huggingface-blog",
+      "kind": "rss",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "tags": ["official", "huggingface"],
+      "poll_interval_seconds": 600
+    },
+    {
+      "name": "techcrunch-ai",
+      "kind": "rss",
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "tags": ["news", "ai"],
+      "poll_interval_seconds": 600
+    },
+    {
+      "name": "venturebeat-ai",
+      "kind": "rss",
+      "url": "https://venturebeat.com/ai/feed/",
+      "enabled": false,
+      "tags": ["news", "ai"],
+      "poll_interval_seconds": 600
+    },
+    {
+      "name": "hackernews-ai-search",
+      "kind": "json_api",
+      "url": "https://hn.algolia.com/api/v1/search_by_date?query=AI%20launch&tags=story",
+      "item_path": ["hits"],
+      "field_map": {
+        "title": "title",
+        "url": "url",
+        "published_at": "created_at",
+        "content": "story_text"
+      },
+      "tags": ["hn", "ai"],
+      "poll_interval_seconds": 900
+    }
+  ]
+}

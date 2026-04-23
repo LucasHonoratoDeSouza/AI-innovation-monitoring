@@ -1,0 +1,80 @@
+{
+  "companies": [
+    {
+      "name": "Anthropic",
+      "company_type": "private",
+      "size_score": 0.93,
+      "aliases": ["anthropic", "claude"],
+      "domains": ["anthropic.com"],
+      "metadata": {
+        "tier": "frontier_lab",
+        "region": "us"
+      }
+    },
+    {
+      "name": "OpenAI",
+      "company_type": "private",
+      "size_score": 0.98,
+      "aliases": ["openai", "gpt", "chatgpt"],
+      "domains": ["openai.com"],
+      "metadata": {
+        "tier": "frontier_lab",
+        "region": "us"
+      }
+    },
+    {
+      "name": "Google",
+      "company_type": "public",
+      "size_score": 1.0,
+      "aliases": ["google", "deepmind", "gemini"],
+      "domains": ["google.com", "blog.google"],
+      "listed_symbols": ["GOOGL"],
+      "metadata": {
+        "tier": "mega_cap"
+      }
+    },
+    {
+      "name": "Adobe",
+      "company_type": "public",
+      "size_score": 0.9,
+      "aliases": ["adobe", "firefly"],
+      "domains": ["adobe.com"],
+      "listed_symbols": ["ADBE"],
+      "metadata": {
+        "tier": "large_cap"
+      }
+    },
+    {
+      "name": "Microsoft",
+      "company_type": "public",
+      "size_score": 1.0,
+      "aliases": ["microsoft", "copilot", "github"],
+      "domains": ["microsoft.com", "github.com"],
+      "listed_symbols": ["MSFT"],
+      "metadata": {
+        "tier": "mega_cap"
+      }
+    },
+    {
+      "name": "NVIDIA",
+      "company_type": "public",
+      "size_score": 1.0,
+      "aliases": ["nvidia"],
+      "domains": ["nvidia.com"],
+      "listed_symbols": ["NVDA"],
+      "metadata": {
+        "tier": "mega_cap"
+      }
+    },
+    {
+      "name": "Render",
+      "company_type": "crypto",
+      "size_score": 0.35,
+      "aliases": ["render", "rndr"],
+      "listed_symbols": ["RNDR"],
+      "metadata": {
+        "tier": "crypto"
+      }
+    }
+  ]
+}

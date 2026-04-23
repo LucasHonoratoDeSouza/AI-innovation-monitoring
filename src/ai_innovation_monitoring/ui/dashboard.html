@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Signal Terminal</title>
+    <style>
+      :root {
+        --bg: #030506;
+        --bg-2: #061014;
+        --panel: rgba(8, 13, 15, 0.94);
+        --panel-2: rgba(11, 18, 20, 0.98);
+        --line: rgba(255, 184, 0, 0.2);
+        --amber: #ffb800;
+        --amber-soft: #ffd25d;
+        --cyan: #54e6ff;
+        --green: #3ef3a0;
+        --red: #ff6f61;
+        --text: #e7ecf1;
+        --muted: #8597a2;
+        --mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+        --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(84, 230, 255, 0.08), transparent 34%),
+          radial-gradient(circle at top right, rgba(255, 184, 0, 0.08), transparent 26%),
+          linear-gradient(180deg, #020304, #030506 42%, #020405);
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+        background-size: 100% 3px, 3px 100%;
+        opacity: 0.18;
+        mix-blend-mode: screen;
+      }
+
+      .shell {
+        position: relative;
+        padding: 10px 10px 16px;
+      }
+
+      .status-strip {
+        display: grid;
+        grid-template-columns: repeat(9, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .status-cell {
+        position: relative;
+        min-height: 72px;
+        padding: 10px 12px;
+        background: linear-gradient(180deg, rgba(7, 11, 13, 0.98), rgba(7, 13, 15, 0.82));
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .status-cell::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        opacity: 0.38;
+      }
+
+      .status-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .status-value {
+        margin-top: 10px;
+        font-family: var(--mono);
+        font-size: 1.55rem;
+        line-height: 1;
+        color: var(--amber-soft);
+      }
+
+      .status-sub {
+        margin-top: 7px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--green);
+      }
+
+      .ticker {
+        margin-bottom: 10px;
+        overflow: hidden;
+        border-top: 1px solid rgba(255, 184, 0, 0.18);
+        border-bottom: 1px solid rgba(255, 184, 0, 0.18);
+        background: rgba(5, 10, 12, 0.94);
+      }
+
+      .ticker-track {
+        display: inline-flex;
+        align-items: center;
+        gap: 24px;
+        min-width: 100%;
+        padding: 6px 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: #ddd9ce;
+        text-transform: uppercase;
+        animation: tape 26s linear infinite;
+        white-space: nowrap;
+      }
+
+      @keyframes tape {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .column {
+        display: grid;
+        gap: 10px;
+      }
+
+      .subgrid-two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .panel {
+        position: relative;
+        background: linear-gradient(180deg, var(--panel), var(--panel-2));
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        overflow: hidden;
+      }
+
+      .panel::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-top: 1px solid rgba(255, 184, 0, 0.18);
+        pointer-events: none;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 9px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.015);
+      }
+
+      .panel-title {
+        font-family: var(--mono);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--amber);
+      }
+
+      .panel-meta {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .panel-body {
+        padding: 10px 12px;
+      }
+
+      .pipeline-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .worker-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 110px 72px 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.018);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .worker-row::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(84, 230, 255, 0.45), transparent);
+        opacity: 0;
+      }
+
+      .worker-row.running {
+        border-color: rgba(84, 230, 255, 0.18);
+      }
+
+      .worker-row.running::after {
+        opacity: 1;
+        animation: sweep 1.15s linear infinite;
+      }
+
+      @keyframes sweep {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+
+      .worker-name,
+      .worker-status,
+      .worker-kv,
+      .micro-table,
+      .console,
+      .table {
+        font-family: var(--mono);
+      }
+
+      .worker-name {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #f5f2ea;
+      }
+
+      .worker-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .worker-status::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--amber);
+        box-shadow: 0 0 12px rgba(255, 184, 0, 0.45);
+      }
+
+      .worker-row.running .worker-status::before {
+        background: var(--cyan);
+        box-shadow: 0 0 14px rgba(84, 230, 255, 0.55);
+      }
+
+      .worker-row.error .worker-status::before {
+        background: var(--red);
+      }
+
+      .worker-details {
+        min-width: 0;
+      }
+
+      .worker-item {
+        color: #ecf2f7;
+        font-size: 12px;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .worker-kv {
+        margin-top: 6px;
+        display: flex;
+        gap: 12px;
+        font-size: 10px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .console {
+        height: 620px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .console-line {
+        display: grid;
+        grid-template-columns: 70px 64px 1fr;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 11px;
+      }
+
+      .console-time {
+        color: var(--muted);
+      }
+
+      .console-stage {
+        color: var(--amber-soft);
+        text-transform: uppercase;
+      }
+
+      .console-message {
+        color: #ebf1f8;
+      }
+
+      .console-payload {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+
+      .table th,
+      .table td {
+        padding: 7px 0;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: top;
+      }
+
+      .table th {
+        color: var(--muted);
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-weight: 500;
+      }
+
+      .table td {
+        color: #edf3fb;
+      }
+
+      .direction-positive { color: var(--green); }
+      .direction-negative { color: var(--red); }
+      .kind-crypto { color: var(--cyan); }
+
+      .score-bar {
+        position: relative;
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.06);
+        overflow: hidden;
+        margin-top: 4px;
+      }
+
+      .score-bar > span {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0;
+        background: linear-gradient(90deg, var(--amber), var(--cyan));
+      }
+
+      .compact-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .compact-item {
+        padding: 8px 9px;
+        background: rgba(255, 255, 255, 0.02);
+        border-left: 2px solid rgba(255, 184, 0, 0.28);
+      }
+
+      .compact-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .compact-title {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #f3f8fd;
+        line-height: 1.35;
+      }
+
+      .compact-sub {
+        margin-top: 5px;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .micro-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+
+      .micro-table td {
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .micro-table td:last-child {
+        text-align: right;
+        color: #eef4fb;
+      }
+
+      .good { color: var(--green); }
+      .warn { color: var(--amber-soft); }
+      .bad { color: var(--red); }
+
+      @media (max-width: 1360px) {
+        .status-strip {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 1180px) {
+        .workspace,
+        .subgrid-two {
+          grid-template-columns: 1fr;
+        }
+
+        .console {
+          height: 420px;
+        }
+      }
+
+      @media (max-width: 860px) {
+        .status-strip {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .worker-row {
+          grid-template-columns: 1fr;
+        }
+
+        .console-line {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .status-strip {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <section class="status-strip">
+        <div class="status-cell">
+          <div class="status-label">Time</div>
+          <div class="status-value" id="clockValue">--:--:--</div>
+          <div class="status-sub" id="runtimeStatus">--</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Documents</div>
+          <div class="status-value" id="documentsValue">0</div>
+          <div class="status-sub" id="documentsSub">stored</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Events</div>
+          <div class="status-value" id="eventsValue">0</div>
+          <div class="status-sub" id="eventsSub">classified</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Impact</div>
+          <div class="status-value" id="impactValue">0</div>
+          <div class="status-sub" id="impactSub">assessments</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Orders</div>
+          <div class="status-value" id="ordersValue">0</div>
+          <div class="status-sub" id="ordersSub">emitted</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Q.Documents</div>
+          <div class="status-value" id="queueDocumentsValue">0</div>
+          <div class="status-sub" id="queueDocumentsSub">ready</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Q.Orders</div>
+          <div class="status-value" id="queueOrdersValue">0</div>
+          <div class="status-sub" id="queueOrdersSub">ready</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Entities</div>
+          <div class="status-value" id="coverageValue">0</div>
+          <div class="status-sub" id="coverageSub">registry</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-label">Last Cycle</div>
+          <div class="status-value" id="lastCycleValue">0</div>
+          <div class="status-sub" id="lastCycleSub">processed</div>
+        </div>
+      </section>
+
+      <section class="ticker">
+        <div class="ticker-track" id="tickerTrack">
+          <span>--</span>
+          <span>--</span>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="column">
+          <article class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Activity Console</div>
+              <div class="panel-meta" id="activityMeta">0 records</div>
+            </div>
+            <div class="panel-body console" id="activityConsole"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Impact Radar</div>
+              <div class="panel-meta" id="impactMeta">0 rows</div>
+            </div>
+            <div class="panel-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Asset</th>
+                    <th>Dir</th>
+                    <th>Relation</th>
+                    <th>Impact</th>
+                  </tr>
+                </thead>
+                <tbody id="impactTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <div class="column">
+          <article class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Recent Events</div>
+              <div class="panel-meta" id="eventsMeta">0 rows</div>
+            </div>
+            <div class="panel-body compact-list" id="eventsStrip"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Pipeline</div>
+              <div class="panel-meta">workers</div>
+            </div>
+            <div class="panel-body">
+              <div class="pipeline-list" id="pipelineGrid"></div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const workerOrder = ["collector", "intelligence", "delivery"];
+      const workerLabels = {
+        collector: "Collector",
+        intelligence: "Decision",
+        delivery: "Delivery",
+      };
+
+      const dashboardEls = {
+        clockValue: document.getElementById("clockValue"),
+        runtimeStatus: document.getElementById("runtimeStatus"),
+        documentsValue: document.getElementById("documentsValue"),
+        documentsSub: document.getElementById("documentsSub"),
+        eventsValue: document.getElementById("eventsValue"),
+        eventsSub: document.getElementById("eventsSub"),
+        impactValue: document.getElementById("impactValue"),
+        impactSub: document.getElementById("impactSub"),
+        ordersValue: document.getElementById("ordersValue"),
+        ordersSub: document.getElementById("ordersSub"),
+        queueDocumentsValue: document.getElementById("queueDocumentsValue"),
+        queueDocumentsSub: document.getElementById("queueDocumentsSub"),
+        queueOrdersValue: document.getElementById("queueOrdersValue"),
+        queueOrdersSub: document.getElementById("queueOrdersSub"),
+        coverageValue: document.getElementById("coverageValue"),
+        coverageSub: document.getElementById("coverageSub"),
+        lastCycleValue: document.getElementById("lastCycleValue"),
+        lastCycleSub: document.getElementById("lastCycleSub"),
+        tickerTrack: document.getElementById("tickerTrack"),
+        pipelineGrid: document.getElementById("pipelineGrid"),
+        activityMeta: document.getElementById("activityMeta"),
+        activityConsole: document.getElementById("activityConsole"),
+        impactMeta: document.getElementById("impactMeta"),
+        impactTable: document.getElementById("impactTable"),
+        eventsMeta: document.getElementById("eventsMeta"),
+        eventsStrip: document.getElementById("eventsStrip"),
+      };
+
+      function nowClock() {
+        const now = new Date();
+        return now.toLocaleTimeString([], { hour12: false });
+      }
+
+      function shortTime(value) {
+        if (!value) return "--:--:--";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "--:--:--";
+        return date.toLocaleTimeString([], { hour12: false });
+      }
+
+      function compactNumber(value) {
+        const number = Number(value || 0);
+        return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(number);
+      }
+
+      function fixed(value, digits = 2) {
+        return Number(value || 0).toFixed(digits);
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;");
+      }
+
+      function renderTicker(snapshot) {
+        const health = snapshot.health || {};
+        const cycle = health.runtime?.last_cycle || {};
+        const queues = health.queue?.queues || {};
+        const activity = snapshot.activity?.activity || [];
+        const latest = activity.slice(0, 10).map((item) => `${item.stage.toUpperCase()} ${item.message}`);
+        const tapeItems = [
+          `SYSTEM ${health.runtime?.running ? "RUNNING" : "IDLE"}`,
+          `DOCS ${compactNumber(health.documents)}`,
+          `EVENTS ${compactNumber(health.events)}`,
+          `IMPACT ${compactNumber(health.impact_assessments)}`,
+          `ORDERS ${compactNumber(health.orders)}`,
+          `Q.DOCS ${compactNumber(queues.documents || 0)}`,
+          `Q.ORDERS ${compactNumber(queues.orders || 0)}`,
+          `LAST.PROCESSED ${compactNumber(cycle.intelligence_processed || 0)}`,
+          `LAST.BLOCKED ${compactNumber(cycle.blocked_orders || 0)}`,
+          ...latest,
+        ];
+        dashboardEls.tickerTrack.innerHTML = tapeItems.concat(tapeItems).map((item) => `<span>${escapeHtml(item)}</span>`).join("");
+      }
+
+      function renderTopStats(snapshot) {
+        const health = snapshot.health || {};
+        const cycle = health.runtime?.last_cycle || {};
+        const queues = health.queue?.queues || {};
+        dashboardEls.clockValue.textContent = nowClock();
+        dashboardEls.runtimeStatus.textContent = health.runtime?.running
+          ? `active ${compactNumber(cycle.documents_seen || 0)} seen`
+          : `idle ${shortTime(health.runtime?.last_finished_at)}`;
+        dashboardEls.documentsValue.textContent = compactNumber(health.documents);
+        dashboardEls.documentsSub.textContent = `${compactNumber(cycle.documents_new || 0)} new last cycle`;
+        dashboardEls.eventsValue.textContent = compactNumber(health.events);
+        dashboardEls.eventsSub.textContent = `${compactNumber(cycle.events_generated || 0)} generated`;
+        dashboardEls.impactValue.textContent = compactNumber(health.impact_assessments);
+        dashboardEls.impactSub.textContent = `${compactNumber(cycle.impact_assessments_generated || 0)} new`;
+        dashboardEls.ordersValue.textContent = compactNumber(health.orders);
+        dashboardEls.ordersSub.textContent = `${compactNumber(cycle.intents_submitted || 0)} delivered`;
+        dashboardEls.queueDocumentsValue.textContent = compactNumber(queues.documents || 0);
+        dashboardEls.queueDocumentsSub.textContent = "doc backlog";
+        dashboardEls.queueOrdersValue.textContent = compactNumber(queues.orders || 0);
+        dashboardEls.queueOrdersSub.textContent = "order backlog";
+        dashboardEls.coverageValue.textContent = compactNumber((snapshot.registry || []).length);
+        dashboardEls.coverageSub.textContent = `${compactNumber(health.impact_rules || 0)} rules`;
+        dashboardEls.lastCycleValue.textContent = compactNumber(cycle.intelligence_processed || 0);
+        dashboardEls.lastCycleSub.textContent = `${compactNumber(cycle.blocked_orders || 0)} blocked`;
+      }
+
+      function renderPipeline(snapshot) {
+        const workers = snapshot.activity?.workers || {};
+        dashboardEls.pipelineGrid.innerHTML = workerOrder.map((name) => {
+          const worker = workers[name] || { status: "idle", current_item: "waiting", metrics: {} };
+          const metrics = worker.metrics || {};
+          const metricsLine = Object.entries(metrics)
+            .slice(0, 3)
+            .map(([key, value]) => `${key.replaceAll("_", ".")} ${compactNumber(value)}`)
+            .join(" • ");
+          return `
+            <div class="worker-row ${escapeHtml(worker.status)}">
+              <div class="worker-name">${escapeHtml(workerLabels[name])}</div>
+              <div class="worker-status">${escapeHtml(worker.status)}</div>
+              <div class="worker-details">
+                <div class="worker-item">${escapeHtml(worker.current_item || "waiting")}</div>
+                <div class="worker-kv">
+                  <span>${escapeHtml(metricsLine || `updated ${shortTime(worker.updated_at)}`)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderActivity(snapshot) {
+        const activity = snapshot.activity?.activity || [];
+        dashboardEls.activityMeta.textContent = `${activity.length} records`;
+        dashboardEls.activityConsole.innerHTML = activity.map((item) => {
+          const payloadEntries = Object.entries(item.payload || {}).slice(0, 3);
+          const payload = payloadEntries.length
+            ? `<span class="console-payload">${payloadEntries.map(([key, value]) => `${escapeHtml(key)}=${escapeHtml(typeof value === "number" ? fixed(value) : value)}`).join(" • ")}</span>`
+            : "";
+          return `
+            <div class="console-line">
+              <div class="console-time">${escapeHtml(shortTime(item.created_at))}</div>
+              <div class="console-stage">${escapeHtml(item.stage)}</div>
+              <div class="console-message">${escapeHtml(item.message)} ${payload}</div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function renderImpact(snapshot) {
+        const rows = snapshot.impact_assessments || [];
+        dashboardEls.impactMeta.textContent = `${rows.length} rows`;
+        dashboardEls.impactTable.innerHTML = rows.map((row) => `
+          <tr>
+            <td>
+              ${escapeHtml(row.target_symbol)}
+              <div class="console-payload ${row.target_asset_type === "crypto" ? "kind-crypto" : ""}">${escapeHtml(row.target_asset_type)}</div>
+            </td>
+            <td class="direction-${escapeHtml(row.direction)}">${escapeHtml(row.direction)}</td>
+            <td>${escapeHtml(row.relation)}</td>
+            <td>
+              <div>${escapeHtml(fixed(row.impact_score))}</div>
+              <div class="score-bar"><span style="width:${Math.max(4, Math.round(Number(row.impact_score || 0) * 100))}%"></span></div>
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      function renderEvents(snapshot) {
+        const rows = snapshot.events || [];
+        dashboardEls.eventsMeta.textContent = `${rows.length} rows`;
+        dashboardEls.eventsStrip.innerHTML = rows.map((event) => `
+          <div class="compact-item">
+            <div class="compact-head">
+              <span>${escapeHtml(event.company)}</span>
+              <span>${escapeHtml(event.category)}</span>
+            </div>
+            <div class="compact-title">${escapeHtml(event.summary)}</div>
+            <div class="compact-sub">
+              n ${escapeHtml(fixed(event.novelty_score))} • i ${escapeHtml(fixed(event.market_impact_score))} • c ${escapeHtml(fixed(event.confidence))}
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function renderAll(snapshot) {
+        renderTopStats(snapshot);
+        renderTicker(snapshot);
+        renderActivity(snapshot);
+        renderImpact(snapshot);
+        renderEvents(snapshot);
+        renderPipeline(snapshot);
+      }
+
+      async function loadSnapshot() {
+        try {
+          const response = await fetch(`/dashboard-data?activity_limit=100`, { cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const snapshot = await response.json();
+          renderAll(snapshot);
+        } catch (error) {
+          dashboardEls.runtimeStatus.textContent = `link degraded ${error.message}`;
+        }
+      }
+
+      dashboardEls.clockValue.textContent = nowClock();
+      loadSnapshot();
+      setInterval(() => {
+        dashboardEls.clockValue.textContent = nowClock();
+        loadSnapshot();
+      }, 1200);
+    </script>
+  </body>
+</html>
