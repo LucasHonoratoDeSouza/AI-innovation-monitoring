@@ -33,7 +33,7 @@ def html_to_text(value: str) -> str:
     text = _TAG_RE.sub(" ", text)
     return _SPACE_RE.sub(" ", text).strip()
 
-
+# Heuristic to detect if a page is showing a bot challenge (like Cloudflare's anti-bot page) instead of the real content.   
 def looks_like_bot_challenge(value: str) -> bool:
     lowered = value.lower()
     challenge_markers = (
