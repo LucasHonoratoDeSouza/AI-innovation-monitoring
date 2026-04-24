@@ -66,7 +66,7 @@ class SourceDocument:
         payload["fetched_at"] = isoformat(self.fetched_at)
         return payload
 
-
+# Note: This is a simple wrapper around HTTP responses to provide a consistent interface and helper methods for our use case. It can be extended in the future with more features like automatic retries, caching, etc.
 @dataclass(slots=True)
 class InnovationEvent:
     event_id: str

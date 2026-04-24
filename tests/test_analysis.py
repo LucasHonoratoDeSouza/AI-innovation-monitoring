@@ -3,7 +3,7 @@ from ai_innovation_monitoring.config import LLMConfig, MarketProfile, ThemeActio
 from ai_innovation_monitoring.domain import InnovationEvent, SourceDocument
 from ai_innovation_monitoring.storage import SQLiteStore
 
-
+# Note: These tests are basic and meant to validate the core logic of our analysis components. In a real-world scenario, we would want to expand these with more edge cases, integration tests, and possibly use mocking for external dependencies.
 class StubLLMAnalyzer:
     def __init__(self) -> None:
         self.called = False
